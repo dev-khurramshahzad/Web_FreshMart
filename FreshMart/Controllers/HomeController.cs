@@ -281,13 +281,14 @@ namespace FreshMart.Controllers
                 Admin? admin = _context.Admins.FirstOrDefault(x => x.Email == txtEmail && x.Passwor == txtPass);
                 if (admin != null)
                 {
-                    HttpContext.Session.SetString("Admin",admin?.Username);
+                    HttpContext.Session.SetString("Admin", admin?.Username);
+                    HttpContext.Session.SetInt32("AdminID", admin.AdminId);
 
                     TempData["Title"] = "Welcome";
                     TempData["Message"] = "Admin Login Successful";
                     TempData["Icon"] = "success";
 
-                    return RedirectToAction("AdminIndex","Home");
+                    return RedirectToAction("AdminIndex", "Home");
                 }
 
                 TempData["Title"] = "Error";
@@ -299,7 +300,7 @@ namespace FreshMart.Controllers
 
             // CUSTOMER LOGIN
 
-            var customer = _context.Customers.FirstOrDefault(x =>x.Email == txtEmail && x.Password == txtPass);
+            var customer = _context.Customers.FirstOrDefault(x => x.Email == txtEmail && x.Password == txtPass);
 
             if (customer != null)
             {
@@ -351,30 +352,96 @@ namespace FreshMart.Controllers
 
             // SAVE IN SESSION
 
-            HttpContext.Session.SetString(
-                "ResetEmail",
-                email);
+            HttpContext.Session.SetString("ResetEmail", email);
 
-            HttpContext.Session.SetInt32(
-                "OTP",
-                otp);
+            HttpContext.Session.SetInt32("OTP", otp);
 
             // SEND EMAIL
 
             MimeMessage message = new MimeMessage();
 
-            message.From.Add(
-                MailboxAddress.Parse(
-                    config["EmailSettings:Email"]));
+            message.From.Add(MailboxAddress.Parse(config["EmailSettings:Email"]));
 
-            message.To.Add(
-                MailboxAddress.Parse(email));
+            message.To.Add(MailboxAddress.Parse(email));
 
             message.Subject = "FreshMart Password Reset OTP";
 
-            message.Body = new TextPart("plain")
+            message.Body = new TextPart("html")
             {
-                Text = "Your OTP is: " + otp
+                Text = $@"
+        <div style='font-family: Arial, sans-serif;
+                    padding:20px;
+                    background:#f4f4f4;'>
+
+            <div style='max-width:500px;
+                        margin:auto;
+                        background:white;
+                        padding:30px;
+                        border-radius:10px;
+                        box-shadow:0 0 10px rgba(0,0,0,0.1);'>
+
+                <h2 style='color:#16a34a;
+                           text-align:center;'>
+                    FreshMart Password Reset
+                </h2>
+
+                <p style='font-size:16px;
+                          color:#333;'>
+
+                    Hello,
+
+                </p>
+
+                <p style='font-size:15px;
+                          color:#555;
+                          line-height:25px;'>
+
+                    We received a request to reset your FreshMart account password.
+                    Please use the following One-Time Password (OTP)
+                    to continue the password reset process.
+
+                </p>
+
+                <div style='text-align:center;
+                            margin:30px 0;'>
+
+                    <span style='display:inline-block;
+                                 background:#16a34a;
+                                 color:white;
+                                 padding:15px 40px;
+                                 font-size:32px;
+                                 font-weight:bold;
+                                 letter-spacing:5px;
+                                 border-radius:8px;'>
+
+                        {otp}
+
+                    </span>
+
+                </div>
+
+                <p style='font-size:14px;
+                          color:#777;
+                          line-height:22px;'>
+
+                    This OTP is valid for a limited time.
+                    Do not share this code with anyone for security reasons.
+
+                </p>
+
+                <hr>
+
+                <p style='text-align:center;
+                          color:#999;
+                          font-size:13px;'>
+
+                    © FreshMart Authentication System
+
+                </p>
+
+            </div>
+
+        </div>"
             };
 
             using (var smtp = new MailKit.Net.Smtp.SmtpClient())
@@ -408,8 +475,7 @@ namespace FreshMart.Controllers
         [HttpPost]
         public IActionResult VerifyOTP(int otp)
         {
-            int? savedOtp =
-                HttpContext.Session.GetInt32("OTP");
+            int? savedOtp = HttpContext.Session.GetInt32("OTP");
 
             if (savedOtp == otp)
             {
@@ -432,9 +498,7 @@ namespace FreshMart.Controllers
         // =========================================
 
         [HttpPost]
-        public IActionResult ResetPassword(
-            string password,
-            string confirmPassword)
+        public IActionResult ResetPassword(string password, string confirmPassword)
         {
             // PASSWORD CHECK
 
@@ -447,29 +511,36 @@ namespace FreshMart.Controllers
                 return RedirectToAction("Login");
             }
 
-            string? email =
-                HttpContext.Session.GetString(
-                    "ResetEmail");
+            string? email = HttpContext.Session.GetString("ResetEmail");
 
-            var customer = _context.Customers
-                .FirstOrDefault(x => x.Email == email);
+            var customer = _context.Customers.FirstOrDefault(x => x.Email == email);
 
             if (customer != null)
             {
                 customer.Password = password;
 
                 _context.SaveChanges();
+
+                HttpContext.Session.Remove("OTP");
+                HttpContext.Session.Remove("ResetEmail");
+
+                TempData["Title"] = "Success";
+                TempData["Message"] = "Password Changed Successfully";
+                TempData["Icon"] = "success";
+            }
+            else
+            {
+                TempData["Title"] = "OTP Error";
+                TempData["Message"] = "Please Enter a correct OTP Only Then It can be reset";
+                TempData["Icon"] = "error";
             }
 
             // CLEAR SESSION
 
             HttpContext.Session.Remove("OTP");
-
             HttpContext.Session.Remove("ResetEmail");
 
-            TempData["Title"] = "Success";
-            TempData["Message"] = "Password Changed Successfully";
-            TempData["Icon"] = "success";
+
 
             return RedirectToAction("Login");
         }
