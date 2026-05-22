@@ -1,7 +1,11 @@
 using FreshMart.Models;
 using Microsoft.EntityFrameworkCore;
+using Stripe;
 
 var builder = WebApplication.CreateBuilder(args);
+
+StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
+
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -16,6 +20,7 @@ builder.Services.AddSession(options =>
 });
 
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

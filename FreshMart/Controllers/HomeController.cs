@@ -1,5 +1,4 @@
 using FreshMart.Models;
-using FreshMart.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MimeKit;
@@ -115,9 +114,30 @@ namespace FreshMart.Controllers
             }
             return FoundIndex;
         }
+        public IActionResult CheckoutMethod(string paymentMethod,decimal amount)
+        {
+            // Check cart empty
+            if (LoggedInCustomer == null)
+            {
+                TempData["Title"] = "Info";
+                TempData["Message"] = "Please Login to Checkout";
+                TempData["Icon"] = "info";
+
+                return Redirect("Login?returnUrl=" + Request.Path);
+            }
+
+
+            if (paymentMethod == "cod")
+                return Redirect("/Home/Checkout");
+
+            else
+                return Redirect("/Payment/Checkout?amount=" + amount);
+
+        }
+
         public IActionResult Checkout()
         {
-
+           
             // Check cart empty
             if (LoggedInCustomer == null)
             {

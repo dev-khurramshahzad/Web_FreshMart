@@ -56,8 +56,27 @@ namespace FreshMart.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ItemId,Name,CategoryFid,Sprice,Pprice,StockUnit,AvailableStock,Status,ExpDate,Rating,Description,Image")] Item item)
+        public async Task<IActionResult> Create(Item item, IFormFile pic)
         {
+            string FileName = Path.GetFileName(pic.FileName);
+            string Ext = Path.GetExtension(pic.FileName).ToLower();
+            if (Ext == ".jpg" || Ext == ".png" || Ext == ".bmp" || Ext == ".jpeg" || Ext == ".tiff" || Ext == ".tif")
+            {
+                string FilePath = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\DataFiles", FileName);
+                using (var fs = new FileStream(FilePath, FileMode.Create))
+                {
+                    await pic.CopyToAsync(fs);
+                    item.Image = FileName;
+                }
+
+            }
+            else
+            {
+                TempData["Title"] = "Error";
+                TempData["Message"] = "Please Select a valid image file (jpg,png,...)";
+                TempData["Icon"] = "error";
+                return View(item);
+            }
             if (ModelState.IsValid)
             {
                 _context.Add(item);
@@ -90,35 +109,54 @@ namespace FreshMart.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ItemId,Name,CategoryFid,Sprice,Pprice,StockUnit,AvailableStock,Status,ExpDate,Rating,Description,Image")] Item item)
+        public async Task<IActionResult> Edit(int id, Item item, IFormFile pic)
         {
+            if (pic != null)
+            {
+                string FileName = Path.GetFileName(pic.FileName);
+                string Ext = Path.GetExtension(pic.FileName).ToLower();
+                if (Ext == ".jpg" || Ext == ".png" || Ext == ".bmp" || Ext == ".jpeg" || Ext == ".tiff" || Ext == ".tif")
+                {
+                    string FilePath = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\DataFiles", FileName);
+                    using (var fs = new FileStream(FilePath, FileMode.Create))
+                    {
+                        await pic.CopyToAsync(fs);
+                        item.Image = FileName;
+                    }
+
+                }
+                else
+                {
+                    TempData["Title"] = "Error";
+                    TempData["Message"] = "Please Select a valid image file (jpg,png,...)";
+                    TempData["Icon"] = "error";
+                    return View(item);
+                }
+            }
             if (id != item.ItemId)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+
+            try
             {
-                try
-                {
-                    _context.Update(item);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ItemExists(item.ItemId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                _context.Update(item);
+                await _context.SaveChangesAsync();
             }
-            ViewData["CategoryFid"] = new SelectList(_context.Categories, "CategoryId", "CategoryId", item.CategoryFid);
-            return View(item);
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ItemExists(item.ItemId))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return RedirectToAction(nameof(Index));
+
         }
 
         // GET: AdmItems/Delete/5

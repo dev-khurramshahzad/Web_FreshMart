@@ -1,0 +1,228 @@
+@{
+    ViewData["Title"] = "Order Details";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+@model FreshMart.Models.Order
+
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="mb-0">
+                        <i class="fas fa-receipt text-primary"></i> Order Details
+                    </h1>
+                    <small class="text-muted">Order #@Model.OrderId</small>
+                </div>
+                <a href="@Url.Action("OrderReport", "Admin")" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Orders
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Order Information Card -->
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0"><i class="fas fa-info-circle"></i> Order Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-6">
+                            <label class="text-muted">Order ID</label>
+                            <h6 class="mb-0">
+                                <span class="badge badge-primary">ORD-@Model.OrderId</span>
+                            </h6>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="text-muted">Order Date</label>
+                            @if (Model.OrderDate.HasValue)
+                            {
+                                <h6 class="mb-0">@Model.OrderDate.Value.ToString("dd MMM yyyy, hh:mm tt")</h6>
+                            }
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <label class="text-muted">Total Amount</label>
+                            <h3 class="text-success mb-0">Rs. @Model.TotalAmount?.ToString("F2")</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Information Card -->
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="fas fa-user"></i> Customer Information</h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.CustomerF != null)
+                    {
+                        <div class="mb-3">
+                            <label class="text-muted">Full Name</label>
+                            <h6 class="mb-0">@Model.CustomerF.FullName</h6>
+                        </div>
+                        <div class="mb-3">
+                            <label class="text-muted">Email Address</label>
+                            <h6 class="mb-0">
+                                <a href="mailto:@Model.CustomerF.Email">@Model.CustomerF.Email</a>
+                            </h6>
+                        </div>
+                        <div class="mb-3">
+                            <label class="text-muted">Phone Number</label>
+                            <h6 class="mb-0">@Model.CustomerF.Phone</h6>
+                        </div>
+                        <div class="mb-0">
+                            <label class="text-muted">Address</label>
+                            <h6 class="mb-0">
+                                @Model.CustomerF.Address, @Model.CustomerF.City, @Model.CustomerF.State @Model.CustomerF.ZipCode
+                            </h6>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Customer information not available</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Items -->
+    <div class="card shadow mb-4">
+        <div class="card-header bg-success text-white">
+            <h6 class="mb-0"><i class="fas fa-box"></i> Order Items</h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="border-bottom">Item ID</th>
+                            <th class="border-bottom">Item Name</th>
+                            <th class="border-bottom">Quantity</th>
+                            <th class="border-bottom">Unit Price</th>
+                            <th class="border-bottom">Total Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.OrderDetails != null && ViewBag.OrderDetails.Count > 0)
+                        {
+                            decimal grandTotal = 0;
+                            @foreach (var item in ViewBag.OrderDetails)
+                            {
+                                decimal itemTotal = (item.Quantity ?? 0) * (item.UnitPrice ?? 0);
+                                grandTotal += itemTotal;
+
+                                <tr>
+                                    <td>
+                                        <span class="badge badge-primary">@item.ItemFid</span>
+                                    </td>
+                                    <td>
+                                        <strong>@item.ItemF?.Name</strong>
+                                    </td>
+                                    <td>
+                                        <strong>@item.Quantity</strong>
+                                    </td>
+                                    <td>
+                                        Rs. @item.UnitPrice?.ToString("F2")
+                                    </td>
+                                    <td>
+                                        <strong class="text-success">Rs. @itemTotal.ToString("F2")</strong>
+                                    </td>
+                                </tr>
+                            }
+                            <tr class="bg-light font-weight-bold">
+                                <td colspan="4" class="text-right border-top">
+                                    <strong>Grand Total:</strong>
+                                </td>
+                                <td class="border-top">
+                                    <h6 class="text-success mb-0">Rs. @grandTotal.ToString("F2")</h6>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-4">
+                                    <i class="fas fa-inbox text-muted" style="font-size: 2rem;"></i>
+                                    <p class="mt-2 text-muted">No items found in this order</p>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Summary Box -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-0">
+                                <label class="text-muted font-weight-bold">ORDER STATUS</label>
+                                <h5 class="text-success mb-0"><i class="fas fa-check-circle"></i> Completed</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-right">
+                            <div class="mb-0">
+                                <label class="text-muted font-weight-bold">ITEMS TOTAL</label>
+                                <h5 class="text-primary mb-0">
+                                    @if (ViewBag.OrderDetails != null)
+                                    {
+                                        @ViewBag.OrderDetails.Count
+                                    }
+                                    items
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .text-right {
+        text-align: right;
+    }
+
+    .font-weight-bold {
+        font-weight: 600;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+    }
+
+    .card-header {
+        border-bottom: 0.2rem solid rgba(0, 0, 0, 0.125);
+    }
+
+    .badge {
+        padding: 0.5rem 0.75rem;
+    }
+
+    .card {
+        border: none;
+    }
+</style>

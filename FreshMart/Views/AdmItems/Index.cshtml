@@ -1,96 +1,162 @@
 ﻿@model IEnumerable<FreshMart.Models.Item>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Manage Products";
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
 }
 
-<h1>Index</h1>
+<div class="container-fluid py-4">
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Sprice)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Pprice)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.StockUnit)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.AvailableStock)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Status)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ExpDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Rating)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Image)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CategoryF)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Sprice)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Pprice)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.StockUnit)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.AvailableStock)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Status)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ExpDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Rating)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Image)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CategoryF.CategoryId)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.ItemId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.ItemId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.ItemId">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Product Management</h2>
+            <p class="text-muted mb-0">Manage all products available in FreshMart.</p>
+        </div>
+
+        <a asp-action="Create" class="btn btn-success shadow-sm">
+            <i class="bi bi-plus-circle me-1"></i> Add New Product
+        </a>
+    </div>
+
+    <!-- Product Table Card -->
+    <div class="card border-0 shadow-lg rounded-4">
+        <div class="card-body">
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle text-center">
+
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Image</th>
+                            <th>Product Name</th>
+                            <th>Selling Price</th>
+                            <th>Purchase Price</th>
+                            <th>Stock Unit</th>
+                            <th>Available Stock</th>
+                            <th>Status</th>
+                            <th>Expiry Date</th>
+                            <th>Rating</th>
+                            <th>Category</th>
+                            <th width="220">Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+
+                                <!-- Product Image -->
+                                <td>
+                                    <img src="~/DataFiles/@item.Image"
+                                         alt="@item.Name"
+                                         class="rounded-3 border"
+                                         width="70"
+                                         height="70"
+                                         style="object-fit:cover;" />
+                                </td>
+
+                                <!-- Product Name -->
+                                <td class="fw-semibold text-dark">
+                                    @item.Name
+                                </td>
+
+                                <!-- Selling Price -->
+                                <td class="text-success fw-bold">
+                                    Rs. @item.Sprice
+                                </td>
+
+                                <!-- Purchase Price -->
+                                <td>
+                                    Rs. @item.Pprice
+                                </td>
+
+                                <!-- Stock Unit -->
+                                <td>
+                                    @item.StockUnit
+                                </td>
+
+                                <!-- Available Stock -->
+                                <td>
+                                    @if (item.AvailableStock > 0)
+                                    {
+                                        <span class="badge bg-success px-3 py-2">
+                                            @item.AvailableStock In Stock
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger px-3 py-2">
+                                            Out of Stock
+                                        </span>
+                                    }
+                                </td>
+
+                                <!-- Status -->
+                                <td>
+                                    @if (item.Status == "Active")
+                                    {
+                                        <span class="badge bg-primary px-3 py-2">
+                                            Active
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary px-3 py-2">
+                                            Inactive
+                                        </span>
+                                    }
+                                </td>
+
+                                <!-- Expiry Date -->
+                                <td>
+                                    @item.ExpDate?.ToString("dd MMM yyyy")
+                                </td>
+
+                                <!-- Rating -->
+                                <td>
+                                    ⭐ @item.Rating
+                                </td>
+
+                                <!-- Category -->
+                                <td>
+                                    @item.CategoryF.CategoryId
+                                </td>
+
+                                <!-- Action Buttons -->
+                                <td>
+                                    <div class="d-flex justify-content-center gap-2">
+
+                                        <a asp-action="Edit"
+                                               asp-route-id="@item.ItemId"
+                                               class="btn btn-sm btn-warning text-white">
+                                            <i class="bi bi-pencil-square"></i> Edit
+                                        </a>
+
+                                        <a asp-action="Details"
+                                               asp-route-id="@item.ItemId"
+                                               class="btn btn-sm btn-info text-white">
+                                            <i class="bi bi-eye"></i> Details
+                                        </a>
+
+                                        <a asp-action="Delete"
+                                               asp-route-id="@item.ItemId"
+                                               class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </a>
+
+                                    </div>
+                                </td>
+
+                            </tr>
+                        }
+                    </tbody>
+
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>

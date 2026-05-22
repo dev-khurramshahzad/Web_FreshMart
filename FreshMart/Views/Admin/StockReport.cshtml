@@ -1,0 +1,221 @@
+@using FreshMart.Controllers
+@model List<StockReportData>
+
+@{
+    ViewData["Title"] = "Stock Report";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="container-fluid mt-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="mb-1">
+                <i class="fas fa-boxes text-primary"></i> Stock Report
+            </h1>
+            <small class="text-muted">Track inventory levels and stock status for all products</small>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-success text-uppercase mb-1">
+                        <small class="font-weight-bold">Total Products</small>
+                    </div>
+                    <h3 class="h3 mb-0">@ViewBag.TotalProducts</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-info text-uppercase mb-1">
+                        <small class="font-weight-bold">Total Stock Value</small>
+                    </div>
+                    <h3 class="h3 mb-0">Rs. @ViewBag.TotalStockValue.ToString("F2")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-warning text-uppercase mb-1">
+                        <small class="font-weight-bold">Low Stock Items</small>
+                    </div>
+                    <h3 class="h3 mb-0">@ViewBag.LowStockCount</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-danger text-uppercase mb-1">
+                        <small class="font-weight-bold">Out of Stock</small>
+                    </div>
+                    <h3 class="h3 mb-0">@ViewBag.OutOfStockCount</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <form method="get" action="@Url.Action("StockReport", "Admin")">
+                <div class="input-group">
+                    <input type="text" name="searchTerm" class="form-control" 
+                           placeholder="Search by product name or category..." 
+                           value="@ViewBag.SearchTerm">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-4 text-right">
+            <a href="@Url.Action("ExportStockReport", "Admin")" class="btn btn-success">
+                <i class="fas fa-download"></i> Export CSV
+            </a>
+        </div>
+    </div>
+
+    <!-- Stock Report Table -->
+    <div class="card shadow">
+        <div class="card-header bg-success text-white">
+            <h6 class="mb-0"><i class="fas fa-table"></i> Stock Details</h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="border-bottom">Item ID</th>
+                            <th class="border-bottom">Product Name</th>
+                            <th class="border-bottom">Category</th>
+                            <th class="border-bottom">Selling Price</th>
+                            <th class="border-bottom">Purchase Price</th>
+                            <th class="border-bottom">Unit</th>
+                            <th class="border-bottom">Available Stock</th>
+                            <th class="border-bottom">Stock Status</th>
+                            <th class="border-bottom">Expiry Date</th>
+                            <th class="border-bottom">Total Value</th>
+                            <th class="border-bottom">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Count() > 0)
+                        {
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <span class="badge badge-primary">@item.ItemId</span>
+                                    </td>
+                                    <td>
+                                        <strong>@item.ItemName</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-info">@item.CategoryName</span>
+                                    </td>
+                                    <td>Rs. @item.SellingPrice.ToString("F2")</td>
+                                    <td>Rs. @item.PurchasePrice.ToString("F2")</td>
+                                    <td>@item.StockUnit</td>
+                                    <td>
+                                        <strong>@item.AvailableStock</strong>
+                                    </td>
+                                    <td>
+                                        @if (item.StockStatus == "Out of Stock")
+                                        {
+                                            <span class="badge badge-danger">@item.StockStatus</span>
+                                        }
+                                        else if (item.StockStatus == "Low Stock")
+                                        {
+                                            <span class="badge badge-warning text-dark">@item.StockStatus</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-success">@item.StockStatus</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (item.ExpiryDate.HasValue)
+                                        {
+                                            <small>@item.ExpiryDate.Value.ToString("dd/MM/yyyy")</small>
+                                        }
+                                        else
+                                        {
+                                            <small class="text-muted">N/A</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <strong class="text-success">Rs. @item.TotalValue.ToString("F2")</strong>
+                                    </td>
+                                    <td>
+                                        @if (item.Status == "Active")
+                                        {
+                                            <span class="badge badge-success">@item.Status</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-secondary">@item.Status</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="11" class="text-center py-4">
+                                    <i class="fas fa-inbox text-muted" style="font-size: 2rem;"></i>
+                                    <p class="mt-2 text-muted">No products found</p>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-left-success {
+        border-left: 0.25rem solid #28a745 !important;
+    }
+
+    .border-left-info {
+        border-left: 0.25rem solid #17a2b8 !important;
+    }
+
+    .border-left-warning {
+        border-left: 0.25rem solid #ffc107 !important;
+    }
+
+    .border-left-danger {
+        border-left: 0.25rem solid #dc3545 !important;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .font-weight-bold {
+        font-weight: 600;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+    }
+</style>

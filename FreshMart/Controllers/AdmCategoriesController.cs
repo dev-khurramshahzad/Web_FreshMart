@@ -53,8 +53,29 @@ namespace FreshMart.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CategoryId,CategoryName,CategoryDetails,CategoryImage,CategoryStatus")] Category category)
+        public async Task<IActionResult> Create(Category category, IFormFile pic)
         {
+
+            string FileName = Path.GetFileName(pic.FileName);
+            string Ext = Path.GetExtension(pic.FileName).ToLower();
+            if (Ext == ".jpg" || Ext == ".png" || Ext == ".bmp" || Ext == ".jpeg" || Ext == ".tiff" || Ext == ".tif")
+            {
+                string FilePath = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\DataFiles", FileName);
+                using (var fs = new FileStream(FilePath, FileMode.Create))
+                {
+                    await pic.CopyToAsync(fs);
+                    category.CategoryImage = FileName;
+                }
+
+            }
+            else
+            {
+                TempData["Title"] = "Error";
+                TempData["Message"] = "Please Select a valid image file (jpg,png,...)";
+                TempData["Icon"] = "error";
+                return View(category);
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(category);
@@ -85,8 +106,30 @@ namespace FreshMart.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("CategoryId,CategoryName,CategoryDetails,CategoryImage,CategoryStatus")] Category category)
+        public async Task<IActionResult> Edit(int id, Category category, IFormFile pic)
         {
+            if (pic != null)
+            {
+                string FileName = Path.GetFileName(pic.FileName);
+                string Ext = Path.GetExtension(pic.FileName).ToLower();
+                if (Ext == ".jpg" || Ext == ".png" || Ext == ".bmp" || Ext == ".jpeg" || Ext == ".tiff" || Ext == ".tif")
+                {
+                    string FilePath = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\DataFiles", FileName);
+                    using (var fs = new FileStream(FilePath, FileMode.Create))
+                    {
+                        await pic.CopyToAsync(fs);
+                        category.CategoryImage = FileName;
+                    }
+
+                }
+                else
+                {
+                    TempData["Title"] = "Error";
+                    TempData["Message"] = "Please Select a valid image file (jpg,png,...)";
+                    TempData["Icon"] = "error";
+                    return View(category);
+                }
+            }
             if (id != category.CategoryId)
             {
                 return NotFound();
